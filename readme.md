@@ -10,7 +10,6 @@ To replicate the work, the following dependancies are necessary:
 - botorch (framework for BO)
 - deepchem (framework for cheminformatics)
 - mol2vec (featurization)
-- mordred (featurization)
 
 To set up the environment, follow the steps:
 ```bash
@@ -19,6 +18,6 @@ conda activate bofeat
 pip install botorch deepchem
 pip install git+https://github.com/samoturk/mol2vec
 ```
-P.S. Installation with conda manager is not recommended as it might led to incompatibility issue
+P.S. Installation with conda manager is not recommended as it caused weird incompatibility issue.
 
-P.P.S. Make sure pip is from the newly created created `bofeat` environment. If you're using a Unix-based OS, you can use which pip to check
+P.P.S. Make sure pip is from the newly created created `bofeat` environment. If you're using a Unix-based OS, you can use `which pip` to check
