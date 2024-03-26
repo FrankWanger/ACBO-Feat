@@ -21,7 +21,7 @@ Created:
     03/25/24
 '''
 
-def gen_data_feat(featurizer_name='rdkit', save_data=False, save_filename='data/lipo_rdkit.csv',dataset = 'lipo'):
+def gen_data_feat(featurizer_name='rdkit', raw_feature=False, save_data=False, save_filename='data/lipo_rdkit.csv',dataset = 'lipo'):
     '''
     Generate the feature matrix and labels for the dataset. Requires DeepChem/mol2vec/mordred to be installed. 
     See readme file for more details.
@@ -31,6 +31,9 @@ def gen_data_feat(featurizer_name='rdkit', save_data=False, save_filename='data/
 
     featurizer_name: str
         Name of the featurizer to use. Options are 'rdkit', 'ecfp', 'mol2vec', 'mordred'.
+
+    raw_feature: bool
+        If True, keep NaN values in the feature matrix. If False, remove NaN values in mordred and rdkit featurizers.
 
     Returns:
         X: np.ndarray
@@ -65,6 +68,15 @@ def gen_data_feat(featurizer_name='rdkit', save_data=False, save_filename='data/
 
     # Get the feature matrix and labels 
     X, y = np.vstack((train_dataset.X,valid_dataset.X,test_dataset.X)),np.vstack((train_dataset.y,valid_dataset.y,test_dataset.y))
+    
+    # Remove NaN values from the feature matrix
+    if not raw_feature:
+        # Find the columns in your data that have NaN values
+        nan_cols = np.any(np.isnan(X), axis=0)
+
+        # Select only the columns in your data that don't have NaN values
+        X = X[:, ~nan_cols]
+
     if save_data:
         np.savetxt(save_filename, np.hstack((X,y)), delimiter=',')
 
@@ -95,10 +107,10 @@ if __name__ == '__main__':
     save_filename = os.path.join('data', 'lipo_{}.csv'.format(featurizer_name))
 
     # Generate and save the feature matrix and labels
-    # X, y = gen_data_feat(featurizer_name=featurizer_name, save_data=False, save_filename=save_filename)
+    X, y = gen_data_feat(featurizer_name=featurizer_name, save_data=True, save_filename=save_filename)
 
     # or, load the pre-featurized data
-    X, y = load_lipo_feat(filename=save_filename)
+    # X, y = load_lipo_feat(filename=save_filename)
 
     # Verify the shape of the feature matrix and labels
     print(X.shape, y.shape)
