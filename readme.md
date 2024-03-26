@@ -10,12 +10,17 @@ To replicate the work, the following dependancies are necessary:
 - botorch (framework for BO)
 - deepchem (framework for cheminformatics)
 - mol2vec (featurization)
+- numpy
+- scikit-learn
+- scikit-optimize
+- torch
+- gpytorch
 
 To set up the environment, follow the steps:
 ```bash
 conda create --name bofeat python=3.9
 conda activate bofeat
-pip install botorch deepchem
+pip install botorch deepchem numpy scikit-learn scikit-optimize torch gpytorch
 pip install git+https://github.com/samoturk/mol2vec
 ```
 P.S. Installation with conda manager is not recommended as it caused weird incompatibility issue.
