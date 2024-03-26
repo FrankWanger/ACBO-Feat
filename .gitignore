@@ -1,0 +1,3 @@
+# Avoid large files (mordred and ecfp ~200MB)
+data/lipo_mordred.csv
+data/lipo_ecfp.csv
