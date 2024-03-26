@@ -103,7 +103,7 @@ def load_lipo_feat(filename='./data/lipo_rdkit.csv'):
 if __name__ == '__main__':
 
     # Example usage
-    featurizer_name='rdkit'
+    featurizer_name='mordred'
     save_filename = os.path.join('data', 'lipo_{}.csv'.format(featurizer_name))
 
     # Generate and save the feature matrix and labels
