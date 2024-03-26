@@ -58,14 +58,12 @@ n = 100
 #example https://botorch.org/tutorials/compare_mc_analytic_acquisition
 #neg_hartmann6 = Hartmann(dim=6, negate=True)
 
-###################################
-#####Train Surrogates##############
-###################################
-
-#ours
-my_surrogate = GPRQSurrogate()
-
 for iter in range(1,c):
+    ###################################
+    #####Train Surrogates##############
+    ###################################
+    # ours
+    my_surrogate = GPRQSurrogate()
     my_surrogate.load_data(train_x=X_train, train_y=y_train)
     # Fit surrogate model.
     out = my_surrogate.fit()
@@ -80,8 +78,9 @@ for iter in range(1,c):
     mll = ExactMarginalLogLikelihood(model.likelihood, model)
     fit_gpytorch_mll(mll);
 
-    #Initialize an analytic EI acquisition function on the fitted model.
-    # Here we need to evaluate the points from the dataset
+    ######################################################################
+    #####Eval element in candidate set and max Acquisition function#######
+    ######################################################################
 
     best_value = y.max()#train_obj.max()
     EI = ExpectedImprovement(model=model, best_f=best_value)
