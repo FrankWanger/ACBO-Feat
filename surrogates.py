@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from skopt import BayesSearchCV
 from skopt.callbacks import HollowIterationsStopper
@@ -16,7 +17,7 @@ Summary:
     continuous features.
 
 Author(s):
-    Quinn Gallagher
+    Quinn Gallagher, Ankur Gupta
 
 Created: 
     03/25/24
@@ -91,7 +92,7 @@ class RandomForestSurrogate(Surrogate):
         self.model = RandomForestRegressor()
         self.fitted = False
 
-    def fit(self, ht=True):
+    def fit(self, ht=True, progress=False):
 
         self.fitted = True
 
@@ -192,7 +193,7 @@ class GPTanimotoSurrogate(Surrogate):
             train_y=torch.FloatTensor(self.train_y)
         )
 
-    def fit(self, max_iter=1000, lr=0.1):
+    def fit(self, max_iter=1000, lr=0.1, cutoff=1e-4, progress=False):
         '''
             Tune hyperparameters for Gaussian process.
         '''
@@ -207,15 +208,26 @@ class GPTanimotoSurrogate(Surrogate):
         self.model.train()
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.model.likelihood, self.model)
+        loss_prev = 0.0
         for i in range(max_iter):
             optimizer.zero_grad()
-            output = self.model(self.train_x)
+            output = self.model(X_train)
             loss = -mll(output, y_train)
             loss.backward()
-            print('Iter %d/%d - Loss: %.3f noise: %.3f' % (
-                i + 1, max_iter, loss.item(),
-                self.model.likelihood.noise.item()
-            ))
+
+            # Check for early stopping.
+            curr_loss = loss.item()
+            if abs(curr_loss - loss_prev) < cutoff:
+                break
+            loss_prev = curr_loss
+
+            # Report progress, if applicable.
+            if progress:
+                print('Iter %d/%d - Loss: %.3f, Noise: %.3f' % (
+                    i + 1, max_iter, loss.item(),
+                    self.model.likelihood.noise.item()
+                ))
+
             optimizer.step()
 
     def predict_means_and_stddevs(self, domain):
@@ -242,6 +254,7 @@ class GPRQSurrogate(Surrogate):
         self.name = 'GP RQ-Kernel Surrogate'
         self.model = None
         self.fitted = False
+        self.scaler = None
 
     def load_data(self, train_x, train_y):
         '''
@@ -250,10 +263,13 @@ class GPRQSurrogate(Surrogate):
         '''
         super().load_data(train_x, train_y)
 
+        # Fit scaler to available data.
+        self.scaler = StandardScaler().fit(self.train_x)
+
         # Instantiate model here, since GP requires
         # training data upon definition.
         self.model = GPRQ(
-            train_x=torch.FloatTensor(self.train_x),
+            train_x=torch.FloatTensor(self.scaler.transform(self.train_x)),
             train_y=torch.FloatTensor(self.train_y)
         )
 
@@ -265,37 +281,51 @@ class GPRQSurrogate(Surrogate):
         '''
         super().add_data(new_x, new_y)
 
+        # Fit scaler to newly added data.
+        self.scaler = StandardScaler().fit(self.train_x)
+
         # Instantiate a new model here, since GP 
         # requires training data upon definition.
         self.model = GPRQ(
-            train_x=torch.FloatTensor(self.train_x),
+            train_x=torch.FloatTensor(self.scaler.transform(self.train_x)),
             train_y=torch.FloatTensor(self.train_y)
         )
 
-    def fit(self, max_iter=1000, lr=0.1):
+    def fit(self, max_iter=1000, lr=0.1, cutoff=1e-4, progress=False):
         '''
             Tune hyperparameters for Gaussian process.
         '''
 
         self.fitted = True
 
-        # Cast training data to tensors.
-        X_train = torch.FloatTensor(self.train_x)
+        # Convert training data to suitable format.
+        X_train = torch.FloatTensor(self.scaler.transform(self.train_x))
         y_train = torch.FloatTensor(self.train_y)
 
         # Fit model hyperparameters.
         self.model.train()
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.model.likelihood, self.model)
+        loss_prev = 0.0
         for i in range(max_iter):
             optimizer.zero_grad()
             output = self.model(X_train)
             loss = -mll(output, y_train)
             loss.backward()
-            # print('Iter %d/%d - Loss: %.3f, Noise: %.3f' % (
-            #     i + 1, max_iter, loss.item(),
-            #     self.model.likelihood.noise.item()
-            # ))
+
+            # Check for early stopping.
+            curr_loss = loss.item()
+            if abs(curr_loss - loss_prev) < cutoff:
+                break
+            loss_prev = curr_loss
+
+            # Report progress, if applicable.
+            if progress:
+                print('Iter %d/%d - Loss: %.3f, Noise: %.3f' % (
+                    i + 1, max_iter, loss.item(),
+                    self.model.likelihood.noise.item()
+                ))
+            
             optimizer.step()
 
     def predict_means_and_stddevs(self, domain):
@@ -305,7 +335,7 @@ class GPRQSurrogate(Surrogate):
             self.fit()
         
         # Cast domain to tensor.
-        domain = torch.FloatTensor(domain)
+        domain = torch.FloatTensor(self.scaler.transform(domain))
 
         # Get predictions from GP.
         self.model.eval()
@@ -359,11 +389,12 @@ class TanimotoGP(gpytorch.models.ExactGP):
 
         # Fill in likelihood
         if likelihood is None:
-            self.likelihood = gpytorch.likelihoods.GaussianLikelihood()
+            likelihood = gpytorch.likelihoods.GaussianLikelihood()
 
-        gpytorch.models.ExactGP.__init__(self, train_x, train_y, self.likelihood)
+        gpytorch.models.ExactGP.__init__(self, train_x, train_y, likelihood)
         self.covar_module = gpytorch.kernels.ScaleKernel(TanimotoKernel())
         self.mean_module = gpytorch.means.ConstantMean()
+        self.likelihood = likelihood
 
     def forward(self, x):
 
