@@ -47,94 +47,104 @@ bests_over_trials = []
 mol_added_over_trials = []
 mol_start_over_trials = []
 
-for trial in range(1,num_trial+1):
-    
-    print('Trial: ', trial)
+Surrogates = ['GPRQ', 'RandomForest', 'GPTanimoto']
+for surrogate in Surrogates:
+    if surrogate == 'GPRQ':
+        my_surrogate = GPRQSurrogate()
+    elif surrogate == 'RandomForest':
+        my_surrogate = RandomForestSurrogate()
+    elif surrogate == 'GPTanimoto':
+        my_surrogate = GPTanimotoSurrogate()
 
-    #############################
-    ###Load and preprocess data##
-    #############################
-    # Load from pre-featurized data
-    X, y = load_lipo_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
+    for trial in range(1,num_trial+1):
+        print('Trial: ', trial)
+        print('------------------------------')
+        print('Surrogate', surrogate)
 
-    # generate an index for the molecules
-    mol_track = np.arange(X.shape[0])
+        #############################
+        ###Load and preprocess data##
+        #############################
+        # Load from pre-featurized data
+        X, y = load_lipo_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
 
-    # Split data into start training and candidate sets
-    X_train, X_candidate, y_train, y_candidate, mol_track_train, mol_track_candidate = train_test_split(
-        X, y, mol_track,
-        test_size=1-partition_ratio,
-        random_state=trial, #set random state for reproducibility, but vary in each trial
-        shuffle=True
-    )
+        # generate an index for the molecules
+        mol_track = np.arange(X.shape[0])
 
-    if trial==1:
-        print(np.shape(X_train))
+        # Split data into start training and candidate sets
+        X_train, X_candidate, y_train, y_candidate, mol_track_train, mol_track_candidate = train_test_split(
+            X, y, mol_track,
+            test_size=1-partition_ratio,
+            random_state=trial, #set random state for reproducibility, but vary in each trial
+            shuffle=True
+        )
 
-    # Standardize input data if needed
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_candidate = scaler.transform(X_candidate)
+        if trial==1:
+            print(np.shape(X_train))
 
-    # Apply PCA to reduce dimensionality (optional)
-    if not feature_pca:
-        pca = PCA(n_components=feature_pca)
-        X_train = pca.fit_transform(X_train)
-        X_cadidate = pca.transform(X_cadidate)
+        # Apply PCA to reduce dimensionality (optional)
 
-    ###################################
-    #####Train Surrogates##############
-    ###################################
-    # initialize surrogate
-    my_surrogate = GPRQSurrogate()
-    my_surrogate.load_data(train_x=X_train, train_y=y_train)
-    best_observed = y_train.max()
+        if feature_pca:
+            # Standardize input data if needed
+            scaler = StandardScaler()
+            X_train = scaler.fit_transform(X_train)
+            X_candidate = scaler.transform(X_candidate)
 
-    #initialize the containers of new points and best observed values
-    # X_new_candidates , y_new_candidates = [],[]
-    current_bests = []
-    mol_added = []
+            pca = PCA(n_components=feature_pca)
+            X_train = pca.fit_transform(X_train)
+            X_candidate = pca.transform(X_candidate)
 
-    for iter in tqdm(range(1,num_iter+1)):
+        ###################################
+        #####Train Surrogates##############
+        ###################################
+        # initialize surrogate
+        my_surrogate.load_data(train_x=X_train, train_y=y_train)
+        best_observed = y_train.max()
 
-        # Fit surrogate model.
-        my_surrogate.fit()
-        # #!!! return hps
+        #initialize the containers of new points and best observed values
+        # X_new_candidates , y_new_candidates = [],[]
+        current_bests = []
+        mol_added = []
 
-        ######################################################################
-        #####Eval element in candidate set and max Acquisition function#######
-        ######################################################################
+        for iter in tqdm(range(1,num_iter+1)):
 
-        means, uncertainties = my_surrogate.predict_means_and_stddevs(X_candidate)
-            
-        # Calculate the Expected Improvement
-        ei = acqf_EI(means, uncertainties, best_observed)
+            # Fit surrogate model.
+            my_surrogate.fit()
+            # #!!! return hps
 
-        # Find the index with the highest Expected Improvement
-        new_index_in_ei = np.argmax(ei)
-        new_x = X_candidate[new_index_in_ei]
-        new_y = y_candidate[new_index_in_ei]
+            ######################################################################
+            #####Eval element in candidate set and max Acquisition function#######
+            ######################################################################
 
-        # Add the new point to the training set
-        my_surrogate.add_data(new_x, new_y)
+            means, uncertainties = my_surrogate.predict_means_and_stddevs(X_candidate)
 
-        # Remove the new point from the candidate set
-        X_candidate = np.delete(X_candidate, new_index_in_ei, axis=0)
-        y_candidate = np.delete(y_candidate, new_index_in_ei)
+            # Calculate the Expected Improvement
+            ei = acqf_EI(means, uncertainties, best_observed)
 
-        # Update the best observed value
-        if new_y > best_observed:
-            best_observed = new_y
+            # Find the index with the highest Expected Improvement
+            new_index_in_ei = np.argmax(ei)
+            new_x = X_candidate[new_index_in_ei]
+            new_y = y_candidate[new_index_in_ei]
 
-        # Record the new point and best observed value at this iteration
-        #X_new_candidates , y_new_candidates = np.append(X_new_candidates, new_x), np.append(y_new_candidates, new_y)
-        mol_added = np.append(mol_added, mol_track_candidate[new_index_in_ei])
-        current_bests = np.append(current_bests, best_observed)
+            # Add the new point to the training set
+            my_surrogate.add_data(new_x, new_y)
 
-    #save best_over_trials to csv after iteration
-    bests_over_trials.append(current_bests)
-    mol_added_over_trials.append(mol_added)
-    mol_start_over_trials.append(mol_track_train)
+            # Remove the new point from the candidate set
+            X_candidate = np.delete(X_candidate, new_index_in_ei, axis=0)
+            y_candidate = np.delete(y_candidate, new_index_in_ei)
+
+            # Update the best observed value
+            if new_y > best_observed:
+                best_observed = new_y
+
+            # Record the new point and best observed value at this iteration
+            #X_new_candidates , y_new_candidates = np.append(X_new_candidates, new_x), np.append(y_new_candidates, new_y)
+            mol_added = np.append(mol_added, mol_track_candidate[new_index_in_ei])
+            current_bests = np.append(current_bests, best_observed)
+
+        #save best_over_trials to csv after iteration
+        bests_over_trials.append(current_bests)
+        mol_added_over_trials.append(mol_added)
+        mol_start_over_trials.append(mol_track_train)
 
 #################################
 ########Save necessary data######
@@ -146,7 +156,7 @@ results = {
     'mol_start': mol_start_over_trials
 }
 
-np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}.npy', results)
+np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.npy', results)
 #bestx, besty, hps, iter, bestobservedylabel
-torch.save(my_surrogate, 'results/model.pickle')
+torch.save(my_surrogate, 'results/model'+str(surrogate)+'.pickle')
 #torch.load('results/model.pickle')
