@@ -146,17 +146,17 @@ for surrogate in Surrogates:
         mol_added_over_trials.append(mol_added)
         mol_start_over_trials.append(mol_track_train)
 
-#################################
-########Save necessary data######
-#################################
-    
-results = {
-    'bests_over_trials': bests_over_trials,
-    'mol_added': mol_added_over_trials,
-    'mol_start': mol_start_over_trials
-}
+    #################################
+    ########Save necessary data######
+    #################################
 
-np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.npy', results)
-#bestx, besty, hps, iter, bestobservedylabel
-torch.save(my_surrogate, 'results/model'+str(surrogate)+'.pickle')
+    results = {
+        'bests_over_trials': bests_over_trials,
+        'mol_added': mol_added_over_trials,
+        'mol_start': mol_start_over_trials
+    }
+
+    np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.npy', results)
+    #bestx, besty, hps, iter, bestobservedylabel
+    torch.save(my_surrogate, 'results/model'+str(surrogate)+'.pickle')
 #torch.load('results/model.pickle')
