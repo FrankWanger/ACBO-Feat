@@ -27,8 +27,8 @@ from tqdm import tqdm
 ######################
 ###Define setting#####
 ######################
-num_iter = 3
-num_trial = 2
+num_iter = 5
+num_trial = 5
 partition_ratio = 0.05 # ratio of data to be used as starting set
 feature_pca = False # int number of PCA components to use, float 0-1 for thresholding explained variance and auto determine component size, False if no PCA
 #Changing featurizer_name implies using specific surrogates and BO runs for all valid surrogates
@@ -147,7 +147,7 @@ for surrogate in Surrogates:
     #################################
 
     results = {
-        'bests_over_trials': bests_over_trials,
+        'bests_over_trials': np.array(bests_over_trials),
         'mol_added': mol_added_over_trials,
         'mol_start': mol_start_over_trials
     }
