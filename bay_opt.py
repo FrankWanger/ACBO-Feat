@@ -40,6 +40,8 @@ num_iter = 3
 num_trial = 3
 featurizer_name = 'rdkit'
 partition_ratio = 0.05 # ratio of data to be used as starting set
+feature_pca = False # int number of PCA components to use, float 0-1 for thresholding explained variance and auto determine component size, False if no PCA
+
 # results
 bests_over_trials = []
 mol_added_over_trials = []
@@ -65,6 +67,16 @@ for trial in range(1,num_trial+1):
         random_state=trial, #set random state for reproducibility, but vary in each trial
         shuffle=True
     )
+    # Standardize input data if needed
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_candidate = scaler.transform(X_candidate)
+
+    # Apply PCA to reduce dimensionality (optional)
+    if not feature_pca:
+        pca = PCA(n_components=feature_pca)
+        X_train = pca.fit_transform(X_train)
+        X_cadidate = pca.transform(X_cadidate)
 
     ###################################
     #####Train Surrogates##############
