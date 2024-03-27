@@ -10,14 +10,6 @@ Created:
 
 #Python packages:
 import torch
-from botorch.fit import fit_gpytorch_mll
-from botorch.models import SingleTaskGP
-from botorch.test_functions import Hartmann
-from gpytorch.mlls import ExactMarginalLogLikelihood
-from botorch.acquisition import ExpectedImprovement
-from botorch.optim import optimize_acqf
-
-from surrogates import Surrogate
 from surrogates import RandomForestSurrogate
 from surrogates import GPTanimotoSurrogate
 from surrogates import GPRQSurrogate
@@ -35,26 +27,34 @@ from tqdm import tqdm
 ######################
 ###Define setting#####
 ######################
-
 num_iter = 3
-num_trial = 3
-featurizer_name = 'rdkit'
+num_trial = 2
 partition_ratio = 0.05 # ratio of data to be used as starting set
 feature_pca = False # int number of PCA components to use, float 0-1 for thresholding explained variance and auto determine component size, False if no PCA
+#Changing featurizer_name implies using specific surrogates and BO runs for all valid surrogates
+featurizer_name = 'mol2vec'#'rdkit'#'ecfp','mol2vec','mordred','e3fp'
 
 # results
 bests_over_trials = []
 mol_added_over_trials = []
 mol_start_over_trials = []
 
-Surrogates = ['GPRQ', 'GPTanimoto', 'RandomForest']
+
+#maybe add graph_kernel!
+if featurizer_name == 'rdkit' or featurizer_name == 'mordred':
+    Surrogates = ['GPRQ', 'RandomForest']
+elif featurizer_name == 'ecfp' or 'e3fp':
+    Surrogates = ['GPTanimoto', 'RandomForest']
+elif featurizer_name == 'mol2vec':
+    Surrogates = ['GPRQ', 'RandomForest']
+
 for surrogate in Surrogates:
     if surrogate == 'GPRQ':
         my_surrogate = GPRQSurrogate()
-    elif surrogate == 'RandomForest':
-        my_surrogate = RandomForestSurrogate()
     elif surrogate == 'GPTanimoto':
         my_surrogate = GPTanimotoSurrogate()
+    elif surrogate == 'RandomForest':
+        my_surrogate = RandomForestSurrogate()
 
     for trial in range(1,num_trial+1):
         print('Trial: ', trial)
@@ -65,8 +65,10 @@ for surrogate in Surrogates:
         ###Load and preprocess data##
         #############################
         # Load from pre-featurized data
-        X, y = load_lipo_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
-
+        if featurizer_name == 'ecfp' or featurizer_name == 'e3fp':
+            X, y = gen_data_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
+        else:
+            X, y = load_lipo_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
         # generate an index for the molecules
         mol_track = np.arange(X.shape[0])
 
@@ -77,9 +79,9 @@ for surrogate in Surrogates:
             random_state=trial, #set random state for reproducibility, but vary in each trial
             shuffle=True
         )
-
+        #Check Shape of X_train:
         if trial==1:
-            print(np.shape(X_train))
+            print("\nShape of X_train:", np.shape(X_train))
 
         # Apply PCA to reduce dimensionality (optional)
 
@@ -109,7 +111,6 @@ for surrogate in Surrogates:
 
             # Fit surrogate model.
             my_surrogate.fit()
-            # #!!! return hps
 
             ######################################################################
             #####Eval element in candidate set and max Acquisition function#######
@@ -158,5 +159,5 @@ for surrogate in Surrogates:
 
     np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.npy', results)
     #bestx, besty, hps, iter, bestobservedylabel
-    torch.save(my_surrogate, 'results/model'+str(surrogate)+'.pickle')
-#torch.load('results/model.pickle')
+    torch.save(my_surrogate, f'results/model_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.pickle')
+    #torch.load('results/model.pickle')
