@@ -17,7 +17,7 @@ Summary:
     continuous features.
 
 Author(s):
-    Quinn Gallagher, Ankur Gupta, Fanjin Wang
+    Quinn Gallagher, Ankur Gupta, Fanjin Wang, Christina Schenk
 
 Created: 
     03/25/24
@@ -229,6 +229,9 @@ class GPTanimotoSurrogate(Surrogate):
                 ))
 
             optimizer.step()
+            if hyper=True:
+                for param_name, param in self.model.named_parameters():
+                    print(f'Parameter name: {param_name:42} value = {param.item()}')
 
     def predict_means_and_stddevs(self, domain):
 
@@ -239,13 +242,28 @@ class GPTanimotoSurrogate(Surrogate):
         # Cast domain to tensor.
         domain = torch.FloatTensor(domain)
 
-        # Get predictions from GP.
+        # Get likelihood from GP.
         self.model.eval()
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
             predictions = self.model.likelihood(self.model(domain))
             means = predictions.mean.detach().numpy()
             stddevs = predictions.stddev.detach().numpy()
             return (means, stddevs)
+
+    def likelihood(self, domain):
+
+        # Fit model if not already fit.
+        if not self.fitted:
+            self.fit()
+
+        # Cast domain to tensor.
+        domain = torch.FloatTensor(domain)
+
+        # Get likelihood from GP.
+        self.model.eval()
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            likelihood = self.model.likelihood(self.model(domain))
+            return likelihood
         
 class GPRQSurrogate(Surrogate):
 
@@ -344,7 +362,20 @@ class GPRQSurrogate(Surrogate):
             means = predictions.mean.detach().numpy()
             stddevs = predictions.stddev.detach().numpy()
             return (means, stddevs)
-    
+    def likelihood(self, domain):
+
+        # Fit model if not already fit.
+        if not self.fitted:
+            self.fit()
+
+        # Cast domain to tensor.
+        domain = torch.FloatTensor(domain)
+
+        # Get predictions from GP.
+        self.model.eval()
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            likelihood = self.model.likelihood(self.model(domain))
+            return likelihood
 # =============================================
 #   HELPER CLASSES / FUNCTIONS
 # =============================================

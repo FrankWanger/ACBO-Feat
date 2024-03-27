@@ -60,8 +60,7 @@ num_trial = 100
 ###################################
 #####Train Surrogates##############
 ###################################
-# initialize ours
-
+# initialize surrogate
 my_surrogate = GPRQSurrogate()
 my_surrogate.load_data(train_x=X_train, train_y=y_train)
 best_observed = y_train.max()
@@ -74,34 +73,12 @@ for iter in range(1,num_iter+1):
 
     # Fit surrogate model.
     my_surrogate.fit()
-
-    #First, we generate some random data and fit a SingleTaskGP for a 6-dimensional synthetic test function 'Hartmann6'.
-    #replace Hartmann by utility function that calls evaluates the points from the dataset
-    #train_x = torch.rand(10, 6)
-    #train_obj = neg_hartmann6(train_x).unsqueeze(-1)
-
-    # model = #SingleTaskGP(train_X=train_x, train_Y=train_obj) # this is where our surrogate goes.
     # #!!! return hps
-    # mll = ExactMarginalLogLikelihood(model.likelihood, model)
-    # fit_gpytorch_mll(mll);
 
     ######################################################################
     #####Eval element in candidate set and max Acquisition function#######
     ######################################################################
 
-    # best_value = y.max()#train_obj.max()
-    # EI = ExpectedImprovement(model=model, best_f=best_value)
-
-    # #Next, we optimize the analytic EI acquisition function using 50 random restarts chosen from 100 initial raw samples.
-    # new_point_analytic, _ = optimize_acqf(#need to check specifics of this function or write ourselves!
-    #     acq_function=EI,
-    #     bounds=torch.tensor([lb, ub]),#e.g. ub [1.0]*6
-    #     q=1,#batchsize=1
-    #     num_restarts=100,#n
-    #     raw_samples=100,#c
-    #     options={},
-    # )
-    # print(new_point_analytic)
     means, uncertainties = my_surrogate.predict_means_and_stddevs(X_candidate)
         
     # Calculate the Expected Improvement
@@ -126,4 +103,8 @@ for iter in range(1,num_iter+1):
     # Record the new point and best observed value at this iteration
     X_new_candidates , y_new_candidates = np.append(X_new_candidates, new_x), np.append(y_new_candidates, new_y)
     current_bests = np.append(current_bests, best_observed)
-    
+
+    #################################
+    ########Save necessary data######
+    #################################
+    #bestx, besty, hps, iter, bestobservedylabel
