@@ -17,7 +17,7 @@ Summary:
     continuous features.
 
 Author(s):
-    Quinn Gallagher, Ankur Gupta
+    Quinn Gallagher, Ankur Gupta, Fanjin Wang
 
 Created: 
     03/25/24
@@ -430,3 +430,14 @@ class GPRQ(gpytorch.models.ExactGP):
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+    
+def acqf_EI(means, uncertainties, best_observed):
+    '''
+        Computes the Expected Improvement acquisition function
+        for a given set of means and uncertainties.
+
+    '''
+    assert means.shape == uncertainties.shape
+    z = torch.tensor((means - best_observed) / uncertainties, dtype=torch.float32)
+    ei = torch.tensor(uncertainties, dtype=torch.float32) * (z * torch.distributions.Normal(0, 1).cdf(z) + torch.distributions.Normal(0, 1).log_prob(z).exp())
+    return ei
