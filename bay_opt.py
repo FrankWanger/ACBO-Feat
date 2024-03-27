@@ -3,7 +3,7 @@ Bayesian optimization loop for benchmarking existing molecule datasets
 
 Author(s):
     Christina Schenk
-
+    Fanjin Wang
 Created:
     03/26/24
 """
