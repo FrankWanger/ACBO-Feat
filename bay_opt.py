@@ -67,6 +67,10 @@ for trial in range(1,num_trial+1):
         random_state=trial, #set random state for reproducibility, but vary in each trial
         shuffle=True
     )
+
+    if trial==1:
+        print(np.shape(X_train))
+
     # Standardize input data if needed
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
@@ -144,3 +148,5 @@ results = {
 
 np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}.npy', results)
 #bestx, besty, hps, iter, bestobservedylabel
+torch.save(my_surrogate, 'results/model.pickle')
+#torch.load('results/model.pickle')
