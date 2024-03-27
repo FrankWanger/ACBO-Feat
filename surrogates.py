@@ -229,9 +229,7 @@ class GPTanimotoSurrogate(Surrogate):
                 ))
 
             optimizer.step()
-            if hyper=True:
-                for param_name, param in self.model.named_parameters():
-                    print(f'Parameter name: {param_name:42} value = {param.item()}')
+
 
     def predict_means_and_stddevs(self, domain):
 
