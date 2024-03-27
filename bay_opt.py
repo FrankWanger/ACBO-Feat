@@ -41,12 +41,10 @@ mol_start_over_trials = []
 
 
 #maybe add graph_kernel!
-if featurizer_name == 'rdkit' or featurizer_name == 'mordred':
+if featurizer_name == 'rdkit' or featurizer_name == 'mordred' or featurizer_name == 'mol2vec':
     Surrogates = ['GPRQ', 'RandomForest']
 elif featurizer_name == 'ecfp' or 'e3fp':
     Surrogates = ['GPTanimoto', 'RandomForest']
-elif featurizer_name == 'mol2vec':
-    Surrogates = ['GPRQ', 'RandomForest']
 
 for surrogate in Surrogates:
     if surrogate == 'GPRQ':
