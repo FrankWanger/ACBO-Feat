@@ -47,7 +47,7 @@ bests_over_trials = []
 mol_added_over_trials = []
 mol_start_over_trials = []
 
-Surrogates = ['GPRQ', 'RandomForest', 'GPTanimoto']
+Surrogates = ['GPRQ', 'GPTanimoto', 'RandomForest']
 for surrogate in Surrogates:
     if surrogate == 'GPRQ':
         my_surrogate = GPRQSurrogate()
