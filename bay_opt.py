@@ -36,12 +36,14 @@ from tqdm import tqdm
 ###Define setting#####
 ######################
 
-num_iter = 10
-num_trial = 10
+num_iter = 3
+num_trial = 3
 featurizer_name = 'rdkit'
 partition_ratio = 0.05 # ratio of data to be used as starting set
 # results
 bests_over_trials = []
+mol_added_over_trials = []
+mol_start_over_trials = []
 
 for trial in range(1,num_trial+1):
     
@@ -53,13 +55,17 @@ for trial in range(1,num_trial+1):
     # Load from pre-featurized data
     X, y = load_lipo_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
 
+    # generate an index for the molecules
+    mol_track = np.arange(X.shape[0])
+
     # Split data into start training and candidate sets
-    X_train, X_candidate, y_train, y_candidate = train_test_split(
-        X, y,
+    X_train, X_candidate, y_train, y_candidate, mol_track_train, mol_track_candidate = train_test_split(
+        X, y, mol_track,
         test_size=1-partition_ratio,
         random_state=trial, #set random state for reproducibility, but vary in each trial
         shuffle=True
     )
+
     ###################################
     #####Train Surrogates##############
     ###################################
@@ -69,8 +75,9 @@ for trial in range(1,num_trial+1):
     best_observed = y_train.max()
 
     #initialize the containers of new points and best observed values
-    X_new_candidates , y_new_candidates = [],[]
+    # X_new_candidates , y_new_candidates = [],[]
     current_bests = []
+    mol_added = []
 
     for iter in tqdm(range(1,num_iter+1)):
 
@@ -88,32 +95,40 @@ for trial in range(1,num_trial+1):
         ei = acqf_EI(means, uncertainties, best_observed)
 
         # Find the index with the highest Expected Improvement
-        new_index = np.argmax(ei)
-        new_x = X_candidate[new_index]
-        new_y = y_candidate[new_index]
+        new_index_in_ei = np.argmax(ei)
+        new_x = X_candidate[new_index_in_ei]
+        new_y = y_candidate[new_index_in_ei]
 
         # Add the new point to the training set
         my_surrogate.add_data(new_x, new_y)
 
         # Remove the new point from the candidate set
-        X_candidate = np.delete(X_candidate, new_index, axis=0)
-        y_candidate = np.delete(y_candidate, new_index)
+        X_candidate = np.delete(X_candidate, new_index_in_ei, axis=0)
+        y_candidate = np.delete(y_candidate, new_index_in_ei)
 
         # Update the best observed value
         if new_y > best_observed:
             best_observed = new_y
 
         # Record the new point and best observed value at this iteration
-        X_new_candidates , y_new_candidates = np.append(X_new_candidates, new_x), np.append(y_new_candidates, new_y)
+        #X_new_candidates , y_new_candidates = np.append(X_new_candidates, new_x), np.append(y_new_candidates, new_y)
+        mol_added = np.append(mol_added, mol_track_candidate[new_index_in_ei])
         current_bests = np.append(current_bests, best_observed)
-
 
     #save best_over_trials to csv after iteration
     bests_over_trials.append(current_bests)
+    mol_added_over_trials.append(mol_added)
+    mol_start_over_trials.append(mol_track_train)
 
 #################################
 ########Save necessary data######
 #################################
-np.savetxt(f'results/lipo_{featurizer_name}_best_observed.csv', bests_over_trials, delimiter=',')
+    
+results = {
+    'bests_over_trials': bests_over_trials,
+    'mol_added': mol_added_over_trials,
+    'mol_start': mol_start_over_trials
+}
 
+np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}.npy', results)
 #bestx, besty, hps, iter, bestobservedylabel
