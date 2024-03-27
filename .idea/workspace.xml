@@ -7,8 +7,6 @@
     <list default="true" id="0f857771-cd13-4f9b-9af0-c6377a6ebf2a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bay_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/bay_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/modelGPRQ.pickle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/modelGPTanimoto.pickle" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

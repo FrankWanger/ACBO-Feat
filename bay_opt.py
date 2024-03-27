@@ -65,10 +65,7 @@ for surrogate in Surrogates:
         ###Load and preprocess data##
         #############################
         # Load from pre-featurized data
-        if featurizer_name == 'ecfp' or featurizer_name == 'e3fp':
-            X, y = gen_data_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
-        else:
-            X, y = load_lipo_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
+        X, y = load_lipo_feat(filename='data/lipo_{}.csv'.format(featurizer_name))
         # generate an index for the molecules
         mol_track = np.arange(X.shape[0])
 
