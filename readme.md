@@ -4,6 +4,19 @@ This is a repo created for the 2024 AC BO Hackathon.
 ## Project
 BO for Drug Discovery: What is the role of molecular representation?
 
+## Questions we are asking:
+ - How fingerprints play a role in BO process
+ - Will dimensionality reduction help with BO performance?
+ - Instead of GP surrogate, will I get better results with a random forest surrogate?
+
+## Poster
+![Project 8](/figures/poster.png)
+
+## Results
+![Performance of Fingerprints](/figures/result1.png)
+
+mol2vec performed the best in our benchmark!
+
 ## Prerequisites
 To replicate the work, the following dependancies are necessary:
 - python 3.9
