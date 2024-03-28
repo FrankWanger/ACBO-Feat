@@ -39,6 +39,17 @@ class Surrogate:
             Stores new training data for fitting 
             this surrogate model.
         '''
+        # Check for rows where all elements in train_x are zeros
+        zero_rows = np.all(train_x == 0, axis=1)
+        if np.any(zero_rows):
+            print("Warning: Rows with all zero elements found in training data.")
+        
+            # Remove rows with all zero elements
+            train_x = train_x[~zero_rows]
+            train_y = train_y[~zero_rows]
+        
+            print(f"Removed {np.sum(zero_rows)} rows with all zero elements.")
+        
         self.train_x = train_x
         self.train_y = train_y
         self.fitted = False
@@ -49,6 +60,19 @@ class Surrogate:
             surrogate model to the already loaded
             training data.
         '''
+        if new_x.ndim == 1:
+            new_x = new_x.reshape(1, -1)
+        # Check for rows where all elements in new_x are zeros
+        zero_rows = np.all(new_x == 0, axis=1)
+        if np.any(zero_rows):
+            print("Warning: Rows with all zero elements found in new data.")
+        
+            # Remove rows with all zero elements
+            new_x = new_x[~zero_rows]
+            new_y = new_y[~zero_rows]
+        
+            print(f"Removed {np.sum(zero_rows)} rows with all zero elements from new data.")
+
         self.train_x = np.vstack((
             self.train_x,
             new_x.reshape(-1, self.train_x.shape[1])
@@ -114,7 +138,7 @@ class RandomForestSurrogate(Surrogate):
                 },
                 n_iter=max_iter,
                 scoring='r2',
-                n_jobs=1,
+                n_jobs=-1,
                 n_points=1,
                 cv=cv_folds,
                 refit=True,
