@@ -133,6 +133,38 @@ def load_lipo_feat(filename='./data/lipo_rdkit.csv'):
         raise FileNotFoundError('Pre-featurized data not found. Please use gen_data_feat instead.')
     return X, y
 
+def fair_train_test_split(X, y, mol_track,test_size,shuffle,random_state,threshold):
+    import sklearn
+    X_train, X_candidate, y_train, y_candidate, mol_track_train, mol_track_candidate = sklearn.model_selection.train_test_split(
+    X, y, mol_track,
+    test_size=test_size,
+    shuffle=shuffle
+    )
+    #print('Training set size before removing:', X_train.shape)
+    threshold =threshold
+
+    high_index = []
+    #move samples with higher label values in training set to a candidate set
+    for i in range(0, len(y_train)):
+            if y_train[i] > threshold:
+                    high_index.append(i)
+                    # add to candidate set
+                    X_candidate = np.vstack((X_candidate, X_train[i]))
+                    y_candidate = np.append(y_candidate, y_train[i])
+                    mol_track_candidate = np.append(mol_track_candidate, mol_track_train[i])
+
+    # remove samples with higher label values in training set
+    X_train = np.delete(X_train, high_index, axis=0)
+    y_train = np.delete(y_train, high_index)
+    mol_track_train = np.delete(mol_track_train, high_index)
+
+    #print('Training set size:', X_train.shape)
+    if shuffle:
+            X_train, y_train, mol_track_train = sklearn.utils.shuffle(X_train, y_train, mol_track_train, random_state=random_state)
+            X_candidate, y_candidate, mol_track_candidate = sklearn.utils.shuffle(X_candidate, y_candidate, mol_track_candidate, random_state=random_state)
+    return X_train, X_candidate, y_train, y_candidate, mol_track_train, mol_track_candidate
+
+
 if __name__ == '__main__':
 
     # Example usage
