@@ -30,9 +30,9 @@ from tqdm import tqdm
 num_iter = 20
 num_trial = 50
 partition_ratio = 0.1 # ratio of data to be used as starting set
-feature_pca = False # int number of PCA components to use, float 0-1 for thresholding explained variance and auto determine component size, False if no PCA
+feature_pca = 0.8 # int number of PCA components to use, float 0-1 for thresholding explained variance and auto determine component size, False if no PCA
 #Changing featurizer_name implies using specific surrogates and BO runs for all valid surrogates
-featurizer_name = 'e3fp'#'rdkit'#'ecfp','mol2vec','mordred','e3fp'
+featurizer_name = 'mol2vec'#'rdkit'#'ecfp','mol2vec','mordred','e3fp'
 
 # results
 bests_over_trials = []
@@ -157,7 +157,7 @@ for surrogate in Surrogates:
         'mol_start': mol_start_over_trials
     }
 
-    np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.npy', results)
+    np.save(f'results/fair_split_trial50_pca0.8/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.npy', results)
     #bestx, besty, hps, iter, bestobservedylabel
-    torch.save(my_surrogate, f'results/fair_split_trial50/model_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.pickle')
+    torch.save(my_surrogate, f'results/fair_split_trial50_pca0.8/model_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.pickle')
     #torch.load('results/model.pickle')
