@@ -5,6 +5,7 @@ BO for Drug Discovery: What is the role of molecular representation?
 
 Project leads
 - Fanjin Wang (University College London)
+
 Contributors
 - Quinn Gallagher (Princeton University)
 - Ankur Gupta (Lawrence Berkeley National Laboratory)
