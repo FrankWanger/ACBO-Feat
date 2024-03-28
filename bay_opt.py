@@ -16,7 +16,7 @@ from surrogates import GPRQSurrogate
 from surrogates import acqf_EI
 
 import numpy as np
-from data_helper import gen_data_feat,load_lipo_feat
+from data_helper import gen_data_feat,load_lipo_feat,fair_train_test_split
 from sklearn.model_selection import train_test_split
 
 from sklearn.preprocessing import StandardScaler
@@ -27,12 +27,12 @@ from tqdm import tqdm
 ######################
 ###Define setting#####
 ######################
-num_iter = 5
-num_trial = 5
-partition_ratio = 0.05 # ratio of data to be used as starting set
+num_iter = 20
+num_trial = 50
+partition_ratio = 0.1 # ratio of data to be used as starting set
 feature_pca = False # int number of PCA components to use, float 0-1 for thresholding explained variance and auto determine component size, False if no PCA
 #Changing featurizer_name implies using specific surrogates and BO runs for all valid surrogates
-featurizer_name = 'mol2vec'#'rdkit'#'ecfp','mol2vec','mordred','e3fp'
+featurizer_name = 'e3fp'#'rdkit'#'ecfp','mol2vec','mordred','e3fp'
 
 # results
 bests_over_trials = []
@@ -42,9 +42,13 @@ mol_start_over_trials = []
 
 #maybe add graph_kernel!
 if featurizer_name == 'rdkit' or featurizer_name == 'mordred' or featurizer_name == 'mol2vec':
-    Surrogates = ['GPRQ', 'RandomForest']
+    Surrogates = ['GPRQ', 
+                  #'RandomForest'
+                  ]
 elif featurizer_name == 'ecfp' or 'e3fp':
-    Surrogates = ['GPTanimoto', 'RandomForest']
+    Surrogates = ['GPTanimoto', 
+                  #'RandomForest'
+                  ]
 
 for surrogate in Surrogates:
     if surrogate == 'GPRQ':
@@ -68,11 +72,12 @@ for surrogate in Surrogates:
         mol_track = np.arange(X.shape[0])
 
         # Split data into start training and candidate sets
-        X_train, X_candidate, y_train, y_candidate, mol_track_train, mol_track_candidate = train_test_split(
+        X_train, X_candidate, y_train, y_candidate, mol_track_train, mol_track_candidate = fair_train_test_split(
             X, y, mol_track,
             test_size=1-partition_ratio,
             random_state=trial, #set random state for reproducibility, but vary in each trial
-            shuffle=True
+            shuffle=True,
+            threshold=1.2
         )
         #Check Shape of X_train:
         if trial==1:
@@ -154,5 +159,5 @@ for surrogate in Surrogates:
 
     np.save(f'results/lipo_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.npy', results)
     #bestx, besty, hps, iter, bestobservedylabel
-    torch.save(my_surrogate, f'results/model_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.pickle')
+    torch.save(my_surrogate, f'results/fair_split_trial50/model_{featurizer_name}_ratio{partition_ratio}_iter{num_iter}_trial{num_trial}'+str(surrogate)+'.pickle')
     #torch.load('results/model.pickle')
