@@ -1,13 +1,20 @@
 # AC BO Hackathon 2024
-This is a repo created for the 2024 AC BO Hackathon.
-
+This is a repo created for the [2024 AC BO Hackathon](https://ac-bo-hackathon.github.io/agenda/)
 ## Project
 BO for Drug Discovery: What is the role of molecular representation?
+
+Project leads
+- Fanjin Wang (University College London)
+Contributors
+- Quinn Gallagher (Princeton University)
+- Ankur Gupta (Lawrence Berkeley National Laboratory)
+- Christina Schenk (IMDEA Materials Institute)
 
 ## Questions we are asking:
  - How fingerprints play a role in BO process
  - Will dimensionality reduction help with BO performance?
  - Instead of GP surrogate, will I get better results with a random forest surrogate?
+
 
 ## Poster
 ![Project 8](/figures/poster.png)
