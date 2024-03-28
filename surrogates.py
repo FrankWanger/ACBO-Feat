@@ -138,7 +138,7 @@ class RandomForestSurrogate(Surrogate):
                 },
                 n_iter=max_iter,
                 scoring='r2',
-                n_jobs=-1,
+                n_jobs=7,
                 n_points=1,
                 cv=cv_folds,
                 refit=True,
