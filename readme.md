@@ -26,10 +26,10 @@ See our [video presentation](https://youtu.be/5f_UwsfYrc8). Comment, suggest, an
 ### 1. Raw Feature Benchmark
 ![Performance of Raw Fingerprints](/figures/result1.svg)
 
-- `mol2vec` performed the best in our **Raw Feature** benchmark!
+- `mol2vec` performed the best in our **Raw Feature** benchmark with GP-based surrogates!
 - The high dimensionality (>1,500) of `mordred`  made its raw feature impossible to be incorporated without processing 
-- `graph` representations was found to be highly resource-demaning in BO, thus not investigated
-- `RF-based surrogates` did NOT bring better performance, but demand significantly more resources to train (due to hyperparameter tuning step in each iter)
+- `graph` representations and `graph` kernels were found to be highly resource-demaning in GP-BO, thus not investigated
+- `RF-based surrogates` brought increased performance with `mordred` and `graph2vec` featurizations, but demand significantly more resources to train (due to hyperparameter tuning step in each iter) and result in high uncertainty
 
 ### 2. PCAed Feature Benchmark
 ![Performance of PCA Fingerprints](/figures/result2.svg)
@@ -38,8 +38,8 @@ See our [video presentation](https://youtu.be/5f_UwsfYrc8). Comment, suggest, an
 -  PCA is detrimental to latent space featurizations with `mol2vec`, we would expect similar obervation with `graph`
 
 ### 3. Conclusion and disclaimers
-- `Physicochemical featurization` with PCA is overall recommended for BO, considering their performance and preservation of chemical information when compaired with other representations.
-- Due to time constrains, our benchmark was on one dataset ([lipophilicity - DeepChem](https://deepchem.readthedocs.io/en/latest/api_reference/moleculenet.html#moleculenet-cheatsheet)). Further exploration are needed for more robust conclusion.
+- `Physicochemical featurization` with PCA is overall recommended for BO, considering their performance and preservation of chemical information when compared with other representations.
+- Due to time constraints, our benchmark was on one dataset ([lipophilicity - DeepChem](https://deepchem.readthedocs.io/en/latest/api_reference/moleculenet.html#moleculenet-cheatsheet)). Further exploration are needed for more robust conclusion.
 - In our benchmark, `Tanimoto Kernel` was used for bit-string connectivity fingerprint. `Rational Quadratic Kernel` was used for physicochemical featurization. The kernel in GP would greatly impact the surrogate's accuracy and thus need further investigation. But it is beyond the scope (and resource) of the present project.
 
 
