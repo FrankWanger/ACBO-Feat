@@ -29,7 +29,7 @@ See our [video presentation](https://youtu.be/5f_UwsfYrc8). Comment, suggest, an
 - `mol2vec` performed the best in our **Raw Feature** benchmark with GP-based surrogates!
 - The high dimensionality (>1,500) of `mordred`  made its raw feature impossible to be incorporated without processing 
 - `graph` representations and `graph` kernels were found to be highly resource-demaning in GP-BO, thus not investigated
-- `RF-based surrogates` brought increased performance with `mordred` and `graph2vec` featurizations, but demand significantly more resources to train (due to hyperparameter tuning step in each iter) and result in high uncertainty
+- `RF-based surrogates` brought increased performance with `mordred` and `graph2vec` featurizations, but demand significantly more resources to train (due to hyperparameter tuning step in each iter) and exhibit high variability
 
 ### 2. PCAed Feature Benchmark
 ![Performance of PCA Fingerprints](/figures/result2.svg)
