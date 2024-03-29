@@ -11,12 +11,13 @@ BO for Drug Discovery: What is the role of molecular representation?
 - Ankur Gupta (Lawrence Berkeley National Laboratory)
 - Christina Schenk (IMDEA Materials Institute)
 
-## Questions we are asking:
+## Questions we are asking (and answering):
  - How fingerprints play a role in BO process
  - Will dimensionality reduction help with BO performance?
  - Instead of GP surrogate, will I get better results with a random forest surrogate?
 
-
+## Video
+See our [video presentation](https://youtu.be/5f_UwsfYrc8). Comment, suggest, and vote project 8 in the judging session!
 ## Poster
 ![Project 8](/figures/poster.png)
 
