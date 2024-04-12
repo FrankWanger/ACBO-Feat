@@ -4,12 +4,12 @@ This is a repo created for the [2024 AC BO Hackathon](https://ac-bo-hackathon.gi
 BO for Drug Discovery: What is the role of molecular representation?
 
 **Project leads**
-- Fanjin Wang (University College London)
+- Fanjin Wang (University College London)@FrankWanger
 
 **Contributors**
-- Quinn Gallagher (Princeton University)
-- Ankur Gupta (Lawrence Berkeley National Laboratory)
-- Christina Schenk (IMDEA Materials Institute)
+- Quinn Gallagher (Princeton University) @QGallagher
+- Ankur Gupta (Lawrence Berkeley National Laboratory) @ankur56
+- Christina Schenk (IMDEA Materials Institute) @schenkch
 
 ## Questions we are asking (and answering):
  - How fingerprints play a role in BO process
